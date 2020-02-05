@@ -25,5 +25,13 @@
 			<type>String</type>
 			<modTime>1554313745828</modTime>
 		</globalVariable>
+		<globalVariable>
+			<name>Version</name>
+			<value>v1.0.0.0</value>
+			<deploymentSettable>true</deploymentSettable>
+			<serviceSettable>false</serviceSettable>
+			<type>String</type>
+			<modTime>1580927282920</modTime>
+		</globalVariable>
 	</globalVariables>
 </repository>
