@@ -1,0 +1,29 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+<repository xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance" xmlns = "http://www.tibco.com/xmlns/repo/types/2002">
+	<globalVariables>
+		<globalVariable>
+			<name>Deployment</name>
+			<value>sortXmls</value>
+			<deploymentSettable>true</deploymentSettable>
+			<serviceSettable>false</serviceSettable>
+			<type>String</type>
+			<modTime>1554309472685</modTime>
+		</globalVariable>
+		<globalVariable>
+			<name>Domain</name>
+			<value>domain</value>
+			<deploymentSettable>true</deploymentSettable>
+			<serviceSettable>false</serviceSettable>
+			<type>String</type>
+			<modTime>1554309472695</modTime>
+		</globalVariable>
+		<globalVariable>
+			<name>Path</name>
+			<value>D:/Programming/Tibco/Tibco/postData</value>
+			<deploymentSettable>true</deploymentSettable>
+			<serviceSettable>false</serviceSettable>
+			<type>String</type>
+			<modTime>1554313745828</modTime>
+		</globalVariable>
+	</globalVariables>
+</repository>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pd:ProcessDefinition xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:pfx="http://www.tibco.com/namespaces/tnt/plugins/file" xmlns:pd="http://xmlns.tibco.com/bw/process/2003" xmlns:ns="http://www.tibco.com/pe/DeployedVarsType" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tib="http://www.tibco.com/bw/xslt/custom-functions">
+    <pd:name>Process Definition.process</pd:name>
+    <pd:startName>File Poller</pd:startName>
+    <pd:startX>0</pd:startX>
+    <pd:startY>0</pd:startY>
+    <pd:returnBindings/>
+    <pd:starter name="File Poller">
+        <pd:type>com.tibco.plugin.file.FileEventSource</pd:type>
+        <pd:resourceType>ae.activities.FileEventSourceResource</pd:resourceType>
+        <pd:x>33</pd:x>
+        <pd:y>26</pd:y>
+        <config>
+            <pollInterval>1</pollInterval>
+            <createEvent>true</createEvent>
+            <modifyEvent>false</modifyEvent>
+            <deleteEvent>false</deleteEvent>
+            <mode>files-and-directories</mode>
+            <encoding>binary</encoding>
+            <sortby>File Name</sortby>
+            <sortorder>descending</sortorder>
+            <fileName>%%Path%%</fileName>
+            <includeCurrent>true</includeCurrent>
+            <excludeContent>false</excludeContent>
+            <includeSubDirectories>true</includeSubDirectories>
+        </config>
+        <pd:inputBindings/>
+    </pd:starter>
+    <pd:endName>End</pd:endName>
+    <pd:endX>326</pd:endX>
+    <pd:endY>26</pd:endY>
+    <pd:errorSchemas/>
+    <pd:processVariables/>
+    <pd:targetNamespace>http://xmlns.example.com/1554309971494</pd:targetNamespace>
+    <pd:activity name="Write File">
+        <pd:type>com.tibco.plugin.file.FileWriteActivity</pd:type>
+        <pd:resourceType>ae.activities.FileWriteActivity</pd:resourceType>
+        <pd:x>222</pd:x>
+        <pd:y>26</pd:y>
+        <config>
+            <encoding>binary</encoding>
+            <compressFile>None</compressFile>
+            <createMissingDirectories>true</createMissingDirectories>
+        </config>
+        <pd:inputBindings>
+            <xsl:variable name="initPath" select="concat(tib:substring-before-last($_globalVariables/ns:GlobalVariables/Path,&quot;/&quot;),&quot;/sorted/&quot;,tib:substring-after-last($_globalVariables/ns:GlobalVariables/Path,&quot;/&quot;))"/>
+            <xsl:variable name="relPath" select="substring-after(translate($File-Poller/pfx:EventSourceOuputBinaryClass/fileInfo/fullName,&quot;\&quot;,&quot;/&quot;),$_globalVariables/ns:GlobalVariables/Path)"/>
+            <pfx:WriteActivityInputBinaryClass>
+                <fileName>
+                    <xsl:value-of select="concat($initPath,$relPath,if($File-Poller/pfx:EventSourceOuputBinaryClass/fileInfo/type=&quot;directory&quot;) then &quot;/dummy.txt&quot; else &quot;&quot;)"/>
+                </fileName>
+                <binaryContent>
+                    <xsl:value-of select="if($File-Poller/pfx:EventSourceOuputBinaryClass/fileInfo/type=&quot;directory&quot;) then &quot;&quot; else ($Transform-XML/xmlBytes/xmlOutput|$File-Poller/pfx:EventSourceOuputBinaryClass/fileContent/binaryContent)[1]"/>
+                </binaryContent>
+            </pfx:WriteActivityInputBinaryClass>
+        </pd:inputBindings>
+    </pd:activity>
+    <pd:activity name="Parse XML">
+        <pd:type>com.tibco.plugin.xml.XMLParseActivity</pd:type>
+        <pd:resourceType>ae.activities.XMLParseActivity</pd:resourceType>
+        <pd:x>112</pd:x>
+        <pd:y>26</pd:y>
+        <config>
+            <inputStyle>binary</inputStyle>
+            <xsdVersion>default</xsdVersion>
+            <validateOutput>false</validateOutput>
+            <term>
+                <xsd:element name="root">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </term>
+        </config>
+        <pd:inputBindings>
+            <xmlBinary>
+                <bytes>
+                    <xsl:value-of select="$File-Poller/pfx:EventSourceOuputBinaryClass/fileContent/binaryContent"/>
+                </bytes>
+            </xmlBinary>
+        </pd:inputBindings>
+    </pd:activity>
+    <pd:activity name="Transform XML">
+        <pd:type>com.tibco.plugin.xml.XMLTransformActivity</pd:type>
+        <pd:resourceType>ae.activities.XMLTransformActivity</pd:resourceType>
+        <pd:x>167</pd:x>
+        <pd:y>81</pd:y>
+        <config>
+            <inputStyle>binary</inputStyle>
+            <engine>TibcoXML</engine>
+            <stylesheet>/XSLT File.xslt</stylesheet>
+        </config>
+        <pd:inputBindings>
+            <bytesInput>
+                <xmlBytesIn>
+                    <xsl:value-of select="$File-Poller/pfx:EventSourceOuputBinaryClass/fileContent/binaryContent"/>
+                </xmlBytesIn>
+            </bytesInput>
+        </pd:inputBindings>
+    </pd:activity>
+    <pd:transition>
+        <pd:from>File Poller</pd:from>
+        <pd:to>Parse XML</pd:to>
+        <pd:xpathDescription/>
+        <pd:lineType>Default</pd:lineType>
+        <pd:lineColor>-16777216</pd:lineColor>
+        <pd:conditionType>always</pd:conditionType>
+    </pd:transition>
+    <pd:transition>
+        <pd:from>Write File</pd:from>
+        <pd:to>End</pd:to>
+        <pd:lineType>Default</pd:lineType>
+        <pd:lineColor>-16777216</pd:lineColor>
+        <pd:conditionType>always</pd:conditionType>
+    </pd:transition>
+    <pd:transition>
+        <pd:from>Parse XML</pd:from>
+        <pd:to>Write File</pd:to>
+        <pd:lineType>Default</pd:lineType>
+        <pd:lineColor>-3407872</pd:lineColor>
+        <pd:conditionType>error</pd:conditionType>
+    </pd:transition>
+    <pd:transition>
+        <pd:from>Parse XML</pd:from>
+        <pd:to>Transform XML</pd:to>
+        <pd:lineType>Default</pd:lineType>
+        <pd:lineColor>-16777216</pd:lineColor>
+        <pd:conditionType>always</pd:conditionType>
+    </pd:transition>
+    <pd:transition>
+        <pd:from>Transform XML</pd:from>
+        <pd:to>Write File</pd:to>
+        <pd:lineType>Default</pd:lineType>
+        <pd:lineColor>-16777216</pd:lineColor>
+        <pd:conditionType>always</pd:conditionType>
+    </pd:transition>
+</pd:ProcessDefinition>
